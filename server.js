@@ -1,6 +1,9 @@
-var express = require('express')
-var morgan  = require('morgan')
-var redis   = require('redis')
+var express  = require('express')
+var morgan   = require('morgan')
+var redis    = require('redis')
+var bluebird = require('bluebird')
+
+bluebird.promisifyAll(redis.RedisClient.prototype)
 
 var db = redis.createClient()
 var app = express()
@@ -14,48 +17,51 @@ db.on('error', function(err) {
 })
 
 function get_instructor_name(id) {
- return db.get(id + ' name')
+ return db.getAsync(id + ' name')
 }
 
 function get_instructor_attributes(id) {
- return db.smembers(id + ' attributes')
+ return db.smembersAsync(id + ' attributes')
 }
 
 function get_video_url(id) {
- return db.get(id + ' video_url')
+ return db.getAsync(id + ' video_url')
 }
 
 function get_video_type(id) {
- return db.get(id + ' video_type')
+ return db.getAsync(id + ' video_type')
 }
 
 function get_other_courses(id) {
- return db.smembers(id + ' other_courses')
+ return db.smembersAsync(id + ' other_courses')
 }
 
-function get_params(id) {
+var get_params = bluebird.Promise.coroutine(function*(id) {
  var params = {}
- params.instructor_name = get_instructor_name(id)
+ params.instructor_name = yield get_instructor_name(id)
  params.title = params.instructor_name
- params.attributes = get_instructor_attributes(id)
+ params.attributes = yield get_instructor_attributes(id)
  params.video_source = {
-  'src': get_video_url(id),
+  'src': yield get_video_url(id),
  }
  params.other_courses = []
- var other_ids = get_other_courses(id)
+ var other_ids = yield get_other_courses(id)
  for (i in other_ids) {
   var id = other_ids[i]
-  params.other_courses.append({
-   'name': get_instructor_name(id),
+  params.other_courses.push({
+   'name': yield get_instructor_name(id),
    'link': '/' + id
   })
  }
  return params
-}
+})
 
 app.get('/:id', function(req, res, next) {
   var id = req.params.id // should ideally do some filtering before going to DB
-  res.send(template(get_params(id)))
+  var params = get_params(id)
+  params.then(function() {
+   res.send(template(params.value()))
+  })
 })
 
 var port = process.env.PORT || 3000

@@ -11,4 +11,5 @@ html(lang = "en")
     .attribute= attr
   #other_courses
    each course in other_courses
-    .other_course= course
+    .other_course
+     a(href = course.link)= course.name
