@@ -1,0 +1,11 @@
+doctype html
+html(lang = "en")
+ head
+  title= title
+ body
+  video
+   source&attributes(video_source)
+  h1= instructor_name
+  #attributes
+   each attr in attributes
+    .attribute= attr
