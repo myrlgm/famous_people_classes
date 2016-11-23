@@ -1,0 +1,22 @@
+{
+  "name": "classes",
+  "version": "1.0.0",
+  "description": "For an interview question.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "github.com/myrlgm/classes"
+  },
+  "author": "Myrl Marmarelis",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.14.0",
+    "jade": "^1.11.0",
+    "morgan": "^1.7.0",
+    "redis": "^2.6.3",
+    "stylus": "^0.54.5"
+  }
+}
